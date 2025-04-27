@@ -12,19 +12,15 @@ router.get("/", (req, res) => {
 });
 
 // Upload PDF
-router.post("/upload/pdf", upload.single("pdf"), async (req, res) => {
-  try {
-    const { originalname, destination, path } = req.file!;
-    await fileUploadQueue.add("file-ready", {
-      filename: originalname,
-      destination,
-      path,
-    });
-    res.json({ message: "PDF uploaded successfully" });
-  } catch (error) {
-    console.error("Error uploading PDF:", error);
-    res.status(500).json({ error: "Failed to upload PDF" });
+router.post("/upload/pdf", async (req, res) => {
+  const { fileId } = req.body;
+
+  if (!fileId) {
+    return res.status(400).json({ error: "File ID is required" });
   }
+  
+  await fileUploadQueue.add("file-ready", { fileId });
+  return res.json({ message: "PDF queued for processing" });
 });
 
 // Chat API
